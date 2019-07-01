@@ -1,4 +1,5 @@
 const mathsteps = require('mathsteps');
+const math = require('mathjs');
 
 const changeDescr = {
   NO_CHANGE: 'Pas niets aan',
@@ -11,56 +12,56 @@ const changeDescr = {
   // BASICS
 
   // e.g. 2/-1 -> -2
-  DIVISION_BY_NEGATIVE_ONE: 'Vervang door het tegengestelde',
+  DIVISION_BY_NEGATIVE_ONE: 'Er wordt gedeeld door $-1$. Vervang de breuk door het tegengestelde van de teller',
   // e.g. 2/1 -> 2
-  DIVISION_BY_ONE: 'Schrap de deling door 1',
+  DIVISION_BY_ONE: 'Er wordt gedeeld door $1$. Behoud enkel de teller',
   // e.g. x * 0 -> 0
-  MULTIPLY_BY_ZERO: 'Vervang de vermenigvuldiging door 0',
+  MULTIPLY_BY_ZERO: 'Er wordt vermenigvuldigd met $0$. Vervang de volledige vermenigvuldiging door $0$',
   // e.g. x * 2 -> 2x
   REARRANGE_COEFF: 'Herorden de coëfficiënten',
   // e.g. x ^ 0 -> 1
-  REDUCE_EXPONENT_BY_ZERO: 'Vervang de macht door 1',
+  REDUCE_EXPONENT_BY_ZERO: 'Er staat een $0$ in de exponent. Vervang de machtsverheffing door $1$',
   // e.g. 0/1 -> 0
-  REDUCE_ZERO_NUMERATOR: 'Vervang de breuk door 0',
+  REDUCE_ZERO_NUMERATOR: 'Er staat een $0$ in de teller. Vervang de breuk door $0$',
   // e.g. 2 + 0 -> 2
-  REMOVE_ADDING_ZERO: 'Schrap de optelling met 0',
+  REMOVE_ADDING_ZERO: 'Schrap de optelling met $0$',
   // e.g. x ^ 1 -> x
-  REMOVE_EXPONENT_BY_ONE: 'Schrap de macht 1',
+  REMOVE_EXPONENT_BY_ONE: 'De exponent is gelijk aan $1$, dat hoeven we niet te schrijven',
   // e.g. 1 ^ x -> 1
-  REMOVE_EXPONENT_BASE_ONE: 'Schrap de exponent van 1',
+  REMOVE_EXPONENT_BASE_ONE: 'Schrap de exponent van grondtal $1$',
   // e.g. x * -1 -> -x
-  REMOVE_MULTIPLYING_BY_NEGATIVE_ONE: 'Vervang door het tegengestelde',
+  REMOVE_MULTIPLYING_BY_NEGATIVE_ONE: 'Er wordt vermenigvuldigd met $-1$. Vervang de vermenigvuldiging door haar tegengestelde',
   // e.g. x * 1 -> x
-  REMOVE_MULTIPLYING_BY_ONE: 'Schrap de vermeningvuldiging met 1',
+  REMOVE_MULTIPLYING_BY_ONE: 'Schrap de vermeningvuldiging met $1$',
   // e.g. 2 - - 3 -> 2 + 3
   RESOLVE_DOUBLE_MINUS: 'Vervang de twee opeenvolgende mintekens door een plus',
 
   // COLLECT AND COMBINE AND BREAK UP
 
   // e.g. 2 + x + 3 + x -> 5 + 2x
-  COLLECT_AND_COMBINE_LIKE_TERMS: 'Zet termen met hetzelfde lettergedeelte samen en reken uit',
+  COLLECT_AND_COMBINE_LIKE_TERMS: 'Zet de gelijksoortige termen samen en combineer',
   // e.g. x + 2 + x^2 + x + 4 -> x^2 + (x + x) + (4 + 2)
-  COLLECT_LIKE_TERMS: 'Zet termen met hetzelfde lettergedeelte samen',
+  COLLECT_LIKE_TERMS: 'Zet de gelijksoortige termen samen',
 
   // MULTIPLYING CONSTANT POWERS
   // e.g. 10^2 * 10^3 -> 10^(2+3)
-  COLLECT_CONSTANT_EXPONENTS: 'Zet exponenten met hetzelfde grondtal samen',
+  COLLECT_CONSTANT_EXPONENTS: 'Zet de exponenten met hetzelfde grondtal samen',
 
   // ADDING POLYNOMIALS
 
   // e.g. 2x + x -> 2x + 1x
-  ADD_COEFFICIENT_OF_ONE: 'Voeg een coëfficiënt van 1 toe',
+  ADD_COEFFICIENT_OF_ONE: 'Voeg een coëfficiënt van $1$ toe',
   // e.g. x^2 + x^2 -> 2x^2
-  ADD_POLYNOMIAL_TERMS: 'Tel termen met hetzelfde lettergedeelte bij elkaar op',
+  ADD_POLYNOMIAL_TERMS: 'Tel de gelijksoortige termen bij elkaar op',
   // e.g. 2x^2 + 3x^2 + 5x^2 -> (2+3+5)x^2
-  GROUP_COEFFICIENTS: 'Groepeer coëfficiënten die bij dezelfde macht horen',
+  GROUP_COEFFICIENTS: 'Zonder de coëfficiënten af',
   // e.g. -x + 2x => -1*x + 2x
-  UNARY_MINUS_TO_NEGATIVE_ONE: 'Maak van het minteken een vermenigvuldiging met -1',
+  UNARY_MINUS_TO_NEGATIVE_ONE: 'Maak van het minteken een vermenigvuldiging met $-1$',
 
   // MULTIPLYING POLYNOMIALS
 
   // e.g. x^2 * x -> x^2 * x^1
-  ADD_EXPONENT_OF_ONE: 'Voeg een exponent van 1 toe',
+  ADD_EXPONENT_OF_ONE: 'Voeg een exponent van $1$ toe',
   // e.g. x^2 * x^3 * x^1 -> x^(2 + 3 + 1)
   COLLECT_POLYNOMIAL_EXPONENTS: 'Zet de exponenten samen',
   // e.g. 2x * 3x -> (2 * 3)(x * x)
@@ -134,7 +135,7 @@ const changeDescr = {
 
   // ABSOLUTE
   // e.g. |-3| -> 3
-  ABSOLUTE_VALUE: 'Bereken de absolute waarde',
+  ABSOLUTE_VALUE: 'Neem de absolute waarde',
 
   // ROOTS
   // e.g. nthRoot(x ^ 2, 4) -> nthRoot(x, 2)
@@ -165,21 +166,21 @@ const changeDescr = {
   // SOLVING FOR A VARIABLE
 
   // e.g. x - 3 = 2 -> x - 3 + 3 = 2 + 3
-  ADD_TO_BOTH_SIDES: 'Tel aan beide kanten hetzelfde getal op',
+  ADD_TO_BOTH_SIDES: function (cgrp) {return `Tel aan beide kanten ${cgrp} op`},
   // e.g. 2x = 1 -> (2x)/2 = 1/2
-  DIVIDE_FROM_BOTH_SIDES: 'Deel beide kanten door hetzelfde getal',
+  DIVIDE_FROM_BOTH_SIDES: function (cgrp) {return `Deel beide kanten door ${cgrp}`},
   // e.g. (2/3)x = 1 -> (2/3)x * (3/2) = 1 * (3/2)
   MULTIPLY_BOTH_SIDES_BY_INVERSE_FRACTION: 'Vermenigvuldig beide kanten met de omgekeerde breuk',
   // e.g. -x = 2 -> -1 * -x = -1 * 2
-  MULTIPLY_BOTH_SIDES_BY_NEGATIVE_ONE: 'Vermenigvuldig beide kanten met -1',
+  MULTIPLY_BOTH_SIDES_BY_NEGATIVE_ONE: 'Vermenigvuldig beide kanten met $-1$',
   // e.g. x/2 = 1 -> (x/2) * 2 = 1 * 2
-  MULTIPLY_TO_BOTH_SIDES: 'Vermenigvuldig beide kanten met hetzelfde getal',
+  MULTIPLY_TO_BOTH_SIDES: function (cgrp) {return `Vermenigvuldig beide kanten met ${cgrp}`},
   // e.g. x + 2 - 1 = 3 -> x + 1 = 3
-  SIMPLIFY_LEFT_SIDE: 'Vereenvoudig de linkerkant',
+  SIMPLIFY_LEFT_SIDE: 'Werk de linkerkant uit',
   // e.g. x = 3 - 1 -> x = 2
-  SIMPLIFY_RIGHT_SIDE: 'Vereenvoudig de rechterkerkant',
+  SIMPLIFY_RIGHT_SIDE: 'Werk de rechterkerkant uit',
   // e.g. x + 3 = 2 -> x + 3 - 3 = 2 - 3
-  SUBTRACT_FROM_BOTH_SIDES: 'Trek van beide kanten hetzelfde getal af',
+  SUBTRACT_FROM_BOTH_SIDES: function (cgrp) {return `Trek van beide kanten ${cgrp} af`},
   // e.g. 2 = x -> x = 2
   SWAP_SIDES: 'Wissel de linker- en rechterkant om',
   // e.g. (x - 2) (x + 2) = 0 => x = [-2, 2]
@@ -197,44 +198,82 @@ const changeDescr = {
   // e.g. x^2 - 4x -> x(x - 4)
   FACTOR_SYMBOL: 'Zonder af',
   // e.g. x^2 - 4 -> (x - 2)(x + 2)
-  FACTOR_DIFFERENCE_OF_SQUARES: 'Ontbind het merkwaardig product van de vorm A^2 - B^2',
+  FACTOR_DIFFERENCE_OF_SQUARES: 'Ontbind het merkwaardig product van de vorm $A^2 - B^2$',
   // e.g. x^2 + 2x + 1 -> (x + 1)^2
-  FACTOR_PERFECT_SQUARE: 'Ontbind het merkwaardig product van de vorm A^2 + 2AB + B^2',
+  FACTOR_PERFECT_SQUARE: 'Ontbind het merkwaardig product van de vorm $A^2 + 2AB + B^2$',
   // e.g. x^2 + 3x + 2 -> (x + 1)(x + 2)
   FACTOR_SUM_PRODUCT_RULE: 'Gebruik som en product om te ontbinden in factoren',
   // e.g. 2x^2 + 4x + 2 -> 2x^2 + 2x + 2x + 2
   BREAK_UP_TERM: 'Splits de term',
 };
 
-const colors = ["rgb(255, 99, 0)",
-  "rgb(25, 169, 116)", "rgb(53, 126, 221)", "rgb(213, 0, 143)"]
+const colors = ["orange",
+  "green", "blue", "purple"]
 
-function htmlNode(node) {
-  let html;
-  if (node.args && node.args.length > 0) {
-    html = node.args.map(node => htmlNode(node)).join(node.op);
-  } else {
-    html = node.toString();
-  }
-  if (node.changeGroup) {
-    html = `<span style="color:${colors[(node.changeGroup - 1) % colors.length]}">${html}</span>`;
-  }
-  return html;
+function customTex(node, options) {
+	if (node.changeGroup) {
+		return `\\${colors[(node.changeGroup - 1) % colors.length]}{${node.toTex()}}`;
+	} else {
+		return node.value;
+	}
 }
 
-function htmlEq(eq) {
-  let html = htmlNode(eq.leftNode);
-  html += eq.comparator;
-  html += htmlNode(eq.rightNode);
-  return html;
+function getChangeGroup(node) {
+	if (node.changeGroup) {
+		return node;
+	} else if (node.args && node.args.length > 0) {
+		for (let i=0; i < node.args.length; i++) {
+			let cgrpNode = getChangeGroup(node.args[i]);
+			if (cgrpNode && cgrpNode.changeGroup) {
+				return cgrpNode;
+			}
+		}
+	}
+	return;
+}
+
+function compToTex(comp) {
+	if (comp == ">=") {
+		return "\\ge";
+	} else if (comp == "<=") {
+		return "\\le";
+	} else {
+		return comp;
+	}
 }
 
 function htmlSingleStep(step) {
   let html = '<li>';
-  html += changeDescr[step.changeType];
-
+  let change = changeDescr[step.changeType]
+  if (typeof change === "function") {
+    let cgrpNode = getChangeGroup(step.newEquation.leftNode);
+    if (cgrpNode == null) {
+      cgrpNode = getChangeGroup(step.newEquation.rightNode);
+    }
+    if (cgrpNode) {
+      html += change('$' + cgrpNode.toTex({handler: customTex}) + '$');
+    } else {
+      // Should not come here
+      html += change(undefined);
+    }
+  } else {
+    html += change;
+  }
+  
+  let rgx = /([ ~]*?)\+[ ~]*?((\\[^{]*{)?[ ~]*?\-[ ~]*?)/gm;
+  let rgxMinBrack = /([ ~]*?\\cdot[ ~]*?)((\\[^{]*{)?[ ~]*?)(\-[ ~]*?\d+)/gm;
   html += '<br>';
-  html += [step.oldEquation, step.newEquation].map(htmlEq).join(' <=> ');
+  html += '\\begin{split}';
+  html += step.oldEquation.leftNode.toTex({handler: customTex}).replace(rgx, '$1$2').replace(rgxMinBrack, '$1$2($4)');
+  html += '&' + compToTex(step.oldEquation.comparator);
+  html += step.oldEquation.rightNode.toTex({handler: customTex}).replace(rgx, '$1$2').replace(rgxMinBrack, '$1$2($4)');
+  html += '\\\\';
+  html += '\\Leftrightarrow';
+  html += step.newEquation.leftNode.toTex({handler: customTex}).replace(rgx, '$1$2').replace(rgxMinBrack, '$1$2($4)');
+  html += '&' + compToTex(step.newEquation.comparator);
+  html += step.newEquation.rightNode.toTex({handler: customTex}).replace(rgx, '$1$2').replace(rgxMinBrack, '$1$2($4)');
+  html += '\\end{split}';
+  
   if(step.substeps && step.substeps.length > 0) {
     html += htmlSteps(step.substeps);
   }
@@ -249,5 +288,18 @@ function htmlSteps(steps) {
   return html;
 }
 
-const steps = mathsteps.solveEquation('-3x - 2 + x = 15 - 6x + 9x - 3');
-console.log(htmlSteps(steps));
+var fs = require('fs');
+
+let html = "<!DOCTYPE html><html><head><title>steps</title>";
+
+let mathjax = fs.readFileSync('/home/fdf/projects/mathstep_tests/mathjax.html', "utf8");
+html += mathjax;
+
+html += "</script></head><body>";
+
+let eq = '-6x - 3 = 2x / 8';
+const steps = mathsteps.solveEquation(eq);
+html += `<h1>Los \$${steps[0].oldEquation.latex()}\$ op</h1>`;
+html += htmlSteps(steps);
+html += '</body></html>';
+console.log(html);
