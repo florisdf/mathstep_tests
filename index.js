@@ -1,5 +1,6 @@
 const mathsteps = require('mathsteps');
 const math = require('mathjs');
+const _ = require('lodash');
 
 const changeDescr = {
   NO_CHANGE: 'Pas niets aan',
@@ -255,48 +256,75 @@ function texSingleEqn(eqn) {
   return texEq
 }
 
-function htmlSingleStep(step) {
-  let html = '<li>';
+function getChangeDescr(step) {
   let change = changeDescr[step.changeType]
   if (typeof change === "function") {
-    let cgrpNode = getChangeGroup(step.newEquation.leftNode);
-    if (cgrpNode == null) {
-      cgrpNode = getChangeGroup(step.newEquation.rightNode);
+    let cgrpNode = undefined;
+    if (_.has(step, 'newEquation')) {
+      cgrpNode = getChangeGroup(step.newEquation.leftNode);
+      if (cgrpNode == null) {
+        cgrpNode = getChangeGroup(step.newEquation.rightNode);
+      }
+    } else if(_.has(step, 'newNode')) {
+      crpNode = getChangeGroup(step.newNode);
+    } else {
+      console.log('' + step + ' has no property newEquation or newNode');
     }
     if (cgrpNode) {
-      html += change('$' + cgrpNode.toTex({handler: customTex}) + '$');
-    } else {
-      // Should not come here
-      html += change(undefined);
-    }
-  } else {
-    html += change;
+      change = change('$' + cgrpNode.toTex({handler: customTex}) + '$');
+    } 
   }
-  
-  let rgx = /([ ~]*?)\+[ ~]*?((\\[^{]*{)?[ ~]*?\-[ ~]*?)/gm;
-  let rgxMinBrack = /([ ~]*?\\cdot[ ~]*?)((\\[^{]*{)?[ ~]*?)(\-[ ~]*?\d+)/gm;
+  return change;
+}
+
+function jsonSingleStep(step) {
+  let change = getChangeDescr(step);
+
+  let oldStep = undefined;
+  let newStep = undefined;
+  if (_.has(step, 'newEquation')) {
+    oldStep = texSingleEqn(step.oldEquation);
+    newStep = texSingleEqn(step.newEquation);
+  } else if (_.has(step, 'newNode')) {
+    oldStep = texSingleNode(step.oldNode);
+    newStep = texSingleNode(step.newNode);
+  }
+
+  let substeps = undefined;
+  if(step.substeps && step.substeps.length > 0) {
+    substeps = jsonSteps(step.substeps);
+  }
+  return {
+    'oldStep': oldStep,
+    'newStep': newStep,
+    'substeps': substeps,
+    'change': change
+  };
+}
+
+function jsonSteps(steps) { 
+  return steps.map(jsonSingleStep);
+}
+
+function htmlStep(step) {
+  let html = '<li>';
+  html += step.change;
   html += '<br>';
   html += '\\begin{split}';
-  html += step.oldEquation.leftNode.toTex({handler: customTex}).replace(rgx, '$1$2').replace(rgxMinBrack, '$1$2($4)');
-  html += '&' + compToTex(step.oldEquation.comparator);
-  html += step.oldEquation.rightNode.toTex({handler: customTex}).replace(rgx, '$1$2').replace(rgxMinBrack, '$1$2($4)');
+  html += step.oldStep;
   html += '\\\\';
-  html += '\\Leftrightarrow';
-  html += step.newEquation.leftNode.toTex({handler: customTex}).replace(rgx, '$1$2').replace(rgxMinBrack, '$1$2($4)');
-  html += '&' + compToTex(step.newEquation.comparator);
-  html += step.newEquation.rightNode.toTex({handler: customTex}).replace(rgx, '$1$2').replace(rgxMinBrack, '$1$2($4)');
+  html += step.newStep;
   html += '\\end{split}';
-  
   if(step.substeps && step.substeps.length > 0) {
     html += htmlSteps(step.substeps);
   }
   html += '</li>';
-  return html
+  return html;
 }
 
-function htmlSteps(steps) { 
-  let html = '<ul>'
-  html += steps.map(htmlSingleStep).join('\n');
+function htmlSteps(jSteps) {
+  let html = '<ul>';
+  html += jSteps.map(htmlStep).join('\n');
   html += '</ul>';
   return html;
 }
@@ -305,14 +333,13 @@ var fs = require('fs');
 
 let html = "<!DOCTYPE html><html><head><title>steps</title>";
 
-let mathjax = fs.readFileSync('/home/fdf/projects/mathstep_tests/mathjax.html', "utf8");
+let mathjax = fs.readFileSync('mathjax.html', "utf8");
 html += mathjax;
 
 html += "</script></head><body>";
 
-let eq = '-6x - 3 = 2x / 8';
-const steps = mathsteps.solveEquation(eq);
-html += `<h1>Los \$${steps[0].oldEquation.latex()}\$ op</h1>`;
-html += htmlSteps(steps);
+let exp = '-6x - 3 + 2x / 8 = 9';
+const steps = mathsteps.solveEquation(exp);
+html += htmlSteps(jsonSteps(steps));
 html += '</body></html>';
 console.log(html);
