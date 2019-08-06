@@ -1,6 +1,9 @@
 const mathsteps = require('mathsteps');
 const math = require('mathjs');
 const _ = require('lodash');
+const express = require('express');
+const bodyParser = require('body-parser')
+const cors = require('cors');
 
 const changeDescr = {
   NO_CHANGE: 'Pas niets aan',
@@ -206,6 +209,15 @@ const changeDescr = {
   FACTOR_SUM_PRODUCT_RULE: 'Gebruik som en product om te ontbinden in factoren',
   // e.g. 2x^2 + 4x + 2 -> 2x^2 + 2x + 2x + 2
   BREAK_UP_TERM: 'Splits de term',
+
+  // e.g. 3x^2 + 6x -> 3x ( x + 2 )
+  ISOLATE_COMMON_FACTOR: 'Zonder de gemeenschappelijke factor af',
+  // e.g. 3*(x - 1) + 2*(1 - x) -> 3*(x - 1) - 2*(x - 1)
+  EQUALIZE_TERM_FACTORS: 'EQUALIZE_TERM_FACTORS',
+  // e.g. 3*(x - 1) + 2*(1 - x) -> (x - 1) and (1 - x)
+  FIND_OP_FACS: 'FIND_OP_FACS',
+  // e.g. 3*(x - 1) + 2*(1 - x) -> 3*(x - 1) + 2*(-1)*(-1 + x)
+  NEGATE_OP_FACS: 'NEGATE_OP_FACS',
 };
 
 const colors = ["orange",
@@ -306,40 +318,29 @@ function jsonSteps(steps) {
   return steps.map(jsonSingleStep);
 }
 
-function htmlStep(step) {
-  let html = '<li>';
-  html += step.change;
-  html += '<br>';
-  html += '\\begin{split}';
-  html += step.oldStep;
-  html += '\\\\';
-  html += step.newStep;
-  html += '\\end{split}';
-  if(step.substeps && step.substeps.length > 0) {
-    html += htmlSteps(step.substeps);
-  }
-  html += '</li>';
-  return html;
-}
+// API
+const app = express();
+app.use(bodyParser.json());
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
 
-function htmlSteps(jSteps) {
-  let html = '<ul>';
-  html += jSteps.map(htmlStep).join('\n');
-  html += '</ul>';
-  return html;
-}
+app.post('/solve', (req, res) => {
+  const steps = jsonSteps(mathsteps.solveEquation(req.body.expr));
+  res.status(200).json(steps);
+});
 
-var fs = require('fs');
+app.post('/factor', (req, res) => {
+  console.log(req.body.expr);
+  const steps = jsonSteps(mathsteps.factor(req.body.expr));
+  res.status(200).json(steps);
+});
 
-let html = "<!DOCTYPE html><html><head><title>steps</title>";
+app.post('/simplify', (req, res) => {
+  const steps = jsonSteps(mathsteps.simplifyExpression(req.body.expr));
+  res.status(200).json(steps);
+});
 
-let mathjax = fs.readFileSync('mathjax.html', "utf8");
-html += mathjax;
-
-html += "</script></head><body>";
-
-let exp = '-6x - 3 + 2x / 8 = 9';
-const steps = mathsteps.solveEquation(exp);
-html += htmlSteps(jsonSteps(steps));
-html += '</body></html>';
-console.log(html);
+const PORT = 1414;
+app.listen(PORT, () => {
+  console.log(`server running on port ${PORT}`)
+});

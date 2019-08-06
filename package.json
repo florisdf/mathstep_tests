@@ -1,11 +1,15 @@
 {
-  "name": "mathsteps",
+  "name": "mathstep_api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
     "lodash": "^4.17.11",
-    "mathsteps": "^0.2.0"
+    "mathjs": "^6.0.3",
+    "mathsteps": "file:../../clones/mathsteps"
   },
   "devDependencies": {},
   "scripts": {
