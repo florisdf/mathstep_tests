@@ -264,7 +264,7 @@ function compToTex(comp) {
 function texSingleNode(node) {
   let rgx = /([ ~]*?)\+[ ~]*?((\\[^{]*{)?[ ~]*?\-[ ~]*?)/gm;
   let rgxMinBrack = /([ ~]*?\\cdot[ ~]*?)((\\[^{]*{)?[ ~]*?)(\-[ ~]*?\d+)/gm;
-  return node.toTex({handler: customTex}).replace(rgx, '$1$2').replace(rgxMinBrack, '$1$2($4)');
+  return node.toTex({handler: customTex});//.replace(rgx, '$1$2').replace(rgxMinBrack, '$1$2$4');
 }
 
 function texSingleEqn(eqn) {
