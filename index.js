@@ -212,6 +212,12 @@ const changeDescr = {
 
   // e.g. 3x^2 + 6x -> 3x ( x + 2 )
   ISOLATE_COMMON_FACTOR: 'Zonder de gemeenschappelijke factor af',
+  // e.g. 10x^2 + 125y -> (2 * 5) x + (5 * 5* 5) y
+  FACTOR_COEFFS_INTO_PRIMES: 'Ontbind de coëfficiënten in priemfactoren',
+  // e.g. 10x^(2m) + 125y -> 10 (x * x * x^m) + 125 y
+  FACTORIZE_EXPONENTS: 'Splits de exponenten',
+  // e.g. a*(x + 4 - 3) -> a*(x + 1)
+  SIMPLIFY_FACTORS: 'Vereenvoudig de factoren',
   // e.g. 3*(x - 1) + 2*(1 - x) -> 3*(x - 1) - 2*(x - 1)
   EQUALIZE_TERM_FACTORS: 'EQUALIZE_TERM_FACTORS',
   // e.g. 3*(x - 1) + 2*(1 - x) -> (x - 1) and (1 - x)
@@ -269,7 +275,7 @@ function texSingleEqn(eqn) {
 }
 
 function getChangeDescr(step) {
-  let change = changeDescr[step.changeType]
+  let change = changeDescr[step.changeType];
   if (typeof change === "function") {
     let cgrpNode = undefined;
     if (_.has(step, 'newEquation')) {
